@@ -39,17 +39,25 @@ for d in sorted(data_files_markets)+sorted(data_files_stocks): #First markets, t
         data_file = data_path +'/Markets/' + d
     dates = []
     open_prices = []
+    open_prices_dates = [] #Needed to find highest and lowest values of open_prices on the bottom plot.
     returns = []
     volumes = []
     file = open(data_file, 'r')
     content = file.readlines()
     firstline = content[0]
     content.pop(0) #Remove first line, doesn't contain numbers
+    year_indices = []
+    date_prev = 0
     for c in content:
         date = c.split('\n')[0].split()[0]
+    ##################TEST#################
+        if int(date.split("-")[0]) < 2011:
+            continue
+    #######################################
         open_price = c.split('\n')[0].split()[1]
         if open_price != 'NaN':
             open_prices.append(float(open_price))
+            open_prices_dates.append(date)
         if "Volume" in firstline: #Do this because some markets (s.a. NASDAQ) don't have a volume entry.
             volume = float(c.split('\n')[0].split()[2])
             return_price = c.split('\n')[0].split()[3]
@@ -57,9 +65,13 @@ for d in sorted(data_files_markets)+sorted(data_files_stocks): #First markets, t
             volume = 10000
             return_price = c.split('\n')[0].split()[2]
         if float(return_price) < 15 and return_price != 'NaN':
-            dates.append(date)
-            returns.append(float(return_price)*100.)
+            dates.append(date)      
+            if int(date.split("-")[0]) > date_prev:
+                year_indices.append(dates.index(date))
+            date_prev = int(date.split("-")[0])
+            returns.append(float(return_price)*100.) 
         volumes.append(volume) #Volume array doesn't have to be on equal length as dates and returns (who are on equal length), we just compute an average in the end. 
+    print year_indices
     n, bins, patches = ax1.hist(returns, bins=np.arange(-10,10,0.5), normed=1,facecolor='green', alpha=0.75)
     mean = np.mean(returns)
     standard_deviation = np.std(returns)
@@ -110,16 +122,38 @@ for d in sorted(data_files_markets)+sorted(data_files_stocks): #First markets, t
         dictionary = markets
     n_entries = len(dictionary[name]['dates'])
     ax2.fill_between(np.arange(len(open_prices)),open_prices, facecolor='blue', alpha=0.5)
-    ax2.set_ylim([0,1.05*max(open_prices)])
+    year_label_indices = [] #Needed to add labels with year between dashed lines.
+    for index in year_indices:
+        if index != year_indices[-1]:
+            year_label_indices.append(int(round((index+year_indices[year_indices.index(index)+1])/2.)))
+        else:
+            year_label_indices.append(int(round((index+n_entries)/2.)))
+        if year_indices.index(index) == 0:
+            continue
+        ax2.plot((index,index),(0,10000),'k--')
+    current_year = int(dates[0].split("-")[0])
+    last_year = int(dates[-1].split("-")[0])
+    max_open_prices = {} 
+    min_open_prices = {}
+    i = current_year
+    while i >= current_year and i <= last_year:
+        maximum = max(filter(lambda x: int(open_prices_dates[open_prices.index(x)].split("-")[0]) == i, open_prices))
+        minimum = min(filter(lambda x: int(open_prices_dates[open_prices.index(x)].split("-")[0]) == i, open_prices))
+        max_open_prices[i] = format(maximum,".2f")
+        min_open_prices[i] = format(minimum, ".2f")
+        i+=1
+    for (index_label,index_minmaxvals) in zip(year_label_indices,year_indices):
+        ax2.text(index_label,1.0*max(open_prices),str(current_year), ha='center', weight='bold',fontsize=8)
+        ax2.text(index_label,0.10*max(open_prices),r'$\Nearrow$'+str(max_open_prices[current_year]), ha='center', weight='bold',fontsize=7)
+        ax2.text(index_label,0.05*max(open_prices),r'$\Searrow$'+str(min_open_prices[current_year]), ha='center', weight='bold',fontsize=7)
+        current_year += 1
+    
+    ax2.set_ylim([0,1.10*max(open_prices)])
     ax2.set_xlim([0, n_entries-1])
     ax2.set_ylabel("Opening prices" + " (" + curr  + ")")
-    n_ticks = float(n_entries)/6.0
-    ticks = np.around([n_ticks*i for i in np.arange(0,6)], decimals=0)
-    ticks = [int(key) for key in ticks]
-    ticks.append(n_entries-1)
-    labels = [changeDateFormat(dictionary[name]['dates'][i]) for i in ticks]
+    labels = [changeDateFormat(dictionary[name]['dates'][i]) for i in year_indices]
     labels.append(changeDateFormat(dictionary[name]['dates'][n_entries-1]))
-    ax2.set_xticks(ticks)
+    ax2.set_xticks(year_indices)
     ax2.set_xticklabels(labels)
 
     fig.savefig(savedir, format='pdf')

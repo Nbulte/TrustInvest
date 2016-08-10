@@ -10,7 +10,7 @@ from info import stocks, markets
 
 #This Script fetches financial data and writes it to .txt files. 
 
-date_start = '2009-01-01'
+date_start = '2011-01-01'
 
 def fetch(date_start, token = '7zHdqqF_5wBuSvgyj2ap', suffix='', which_markets='all'): #This function only requires a date_start, arguments that are of the form arg = [...] are already filled in but can be changed if required.
 
