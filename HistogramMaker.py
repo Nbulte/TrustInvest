@@ -71,7 +71,6 @@ for d in sorted(data_files_markets)+sorted(data_files_stocks): #First markets, t
             date_prev = int(date.split("-")[0])
             returns.append(float(return_price)*100.) 
         volumes.append(volume) #Volume array doesn't have to be on equal length as dates and returns (who are on equal length), we just compute an average in the end. 
-    print year_indices
     n, bins, patches = ax1.hist(returns, bins=np.arange(-10,10,0.5), normed=1,facecolor='green', alpha=0.75)
     mean = np.mean(returns)
     standard_deviation = np.std(returns)
@@ -91,8 +90,11 @@ for d in sorted(data_files_markets)+sorted(data_files_stocks): #First markets, t
         means.append(mean)
         sigmas.append(standard_deviation)
         names.append(name)
-#        savedir = os.getcwd()+'/Plots/Teststocks/'+d.replace('.txt', '')
-        savedir = os.getcwd()+'/Plots/Stocks/'+d.replace('.txt', '')
+        first_char = name[0].upper() if name[0].isalpha() else "other" #Let's save the plots in subdirectories starting with the first letter, e.g. Amazon -> Plots/Stocks/A/Amazon . If first char is not a letter, save it to "other".
+        savedir = os.getcwd()+'/Plots/Stocks/'+first_char
+        if not os.path.exists(savedir): #Make the directory if it doesn't exist. 
+            os.makedirs(savedir)
+        savedir += "/"+d.replace('.txt', '')
         this_market = markets[stocks[name]['market']]
         if this_market.has_key('returns') and this_market.has_key('dates'):
             beta = beta_market(copy.copy(this_market['returns']), copy.copy(stocks[name]['returns']), copy.copy(this_market['dates']), copy.copy(stocks[name]['dates']))
@@ -189,7 +191,11 @@ pickle_library['stocks'] = stocks #Contains all the stocks with their dates, ret
 pickle_library['markets'] = markets #Contains all the markets with their dates, returns, beta's,...
 
 PIK = "pickled_info.dat"
-with open(os.getcwd()+"/Pickle/"+PIK, "wb") as f:
+pick_dir = os.getcwd()+"/Pickle/"
+if not os.path.exists(pick_dir):
+    os.makedirs(pick_dir)
+pick_dir += PIK
+with open(pick_dir, "wb") as f:
     pickle.dump(pickle_library,f)
 
 #################################################################################################

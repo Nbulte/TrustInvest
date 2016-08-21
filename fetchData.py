@@ -84,9 +84,12 @@ def fetch(date_start, token = '7zHdqqF_5wBuSvgyj2ap', suffix='', which_markets='
             outfile_name = outfile_name.replace("/","") 
 
         if prefix == 's_':
-            outfile = open(os.path.join(os.getcwd()+'/Data/Stocks',outfile_name+'.txt'), 'w') #open(location, read or write)
+            directory = os.path.join(os.getcwd()+'/Data/Stocks',outfile_name+'.txt')
         if prefix == 'm_':
-            outfile = open(os.path.join(os.getcwd()+'/Data/Markets',outfile_name+'.txt'), 'w') #open(location, read or write)
+            directory = os.path.join(os.getcwd()+'/Data/Markets',outfile_name+'.txt')
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        outfile = open(directory, 'w') #open(location, read or write)
         out_text = data.to_string(index_names=False)
         outfile.write(out_text)
         outfile.close()
