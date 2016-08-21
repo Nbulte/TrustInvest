@@ -137,10 +137,16 @@ for d in sorted(data_files_markets)+sorted(data_files_stocks): #First markets, t
     min_open_prices = {}
     i = current_year
     while i >= current_year and i <= last_year:
-        maximum = max(filter(lambda x: int(open_prices_dates[open_prices.index(x)].split("-")[0]) == i, open_prices))
-        minimum = min(filter(lambda x: int(open_prices_dates[open_prices.index(x)].split("-")[0]) == i, open_prices))
-        max_open_prices[i] = format(maximum,".2f")
-        min_open_prices[i] = format(minimum, ".2f")
+        try:
+            maximum = max(filter(lambda x: int(open_prices_dates[open_prices.index(x)].split("-")[0]) == i, open_prices))
+            minimum = min(filter(lambda x: int(open_prices_dates[open_prices.index(x)].split("-")[0]) == i, open_prices))
+            max_open_prices[i] = format(maximum,".2f")
+            min_open_prices[i] = format(minimum, ".2f")
+        except ValueError:
+            maximum = "N.A."
+            minimum = "N.A."
+            max_open_prices[i] = maximum 
+            min_open_prices[i] = minimum
         i+=1
     for (index_label,index_minmaxvals) in zip(year_label_indices,year_indices):
         ax2.text(index_label,1.0*max(open_prices),str(current_year), ha='center', weight='bold',fontsize=8)
