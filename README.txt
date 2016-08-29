@@ -1,6 +1,5 @@
 This repository contains all necessary code to implement the CAPM into the creation of an optimal stock portfolio. 
 
-
 Relevant info:
 
 info.py		:	This file contains all info in the Python library format necessary to use the fetchData.py script. It contains a list of the stocks/markets along with its Quandlcodes, currencies, etc. 

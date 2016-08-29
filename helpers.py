@@ -172,3 +172,10 @@ def writeOutError(name):
     if name not in f.read().split("\n"):
         f.write(name+"\n")
     f.close()
+
+###############################################################################
+def chunks(l, n): #   Yield successive n-sized chunks from l. (Used in fetchData.py)
+    chunked_list = []
+    for i in range(0, len(l), n):
+        chunked_list.append(l[i:i + n])
+    return chunked_list
